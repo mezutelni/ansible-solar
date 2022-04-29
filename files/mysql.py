@@ -56,7 +56,10 @@ def create_backup(ip, port, user, password, db):
                             )
     # Assume that error occurred, when exit code is not 0
     if result.returncode != 0:
-        print(error_generator("dump_error", result.stderr.strip("Enter password: ")))
+        try:
+            print(error_generator("dump_error", result.stderr.strip("Enter password: ").decode))
+        except TypeError:
+            print(result.stderr)
         return 1
 
     archive_result = archive(archive_cmd=archive_cmd, result_sql=result.stdout)
