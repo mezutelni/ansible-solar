@@ -1,0 +1,55 @@
+- hosts: all
+  become: true
+
+  tasks:
+
+    - name: Installing needed packages
+      apt:
+        name: mariadb-client, pigz, rsync
+        update_cache: yes
+      when: (backups is defined)
+
+    - name: Create folder which will hold backup files
+      file: 
+        path: /var/backups/own
+        state: directory
+        owner: backup
+        group: backup
+        mode: 0770
+      when: (backups is defined)
+
+    - name: Create folder which will hold mysql backups
+      file: 
+        path: /var/backups/own/mysql
+        state: directory
+        owner: backup
+        group: backup
+        mode: 0770
+      when: (backups is defined) and (backups.databases is defined)
+
+    - name: Install mysql backup scripts
+      copy: 
+        src: ../files/mysql.py
+        dest: /var/backups/own/
+        owner: backup
+        group: backup
+        mode: 0700
+      when: (backups is defined) and (backups.databases is defined)
+    
+    - name: Create backup config
+      template:
+        src: ../files/config.j2
+        dest: /var/backups/own/.config
+        owner: backup
+        group: backup
+        mode: 0660
+
+    - name: Add cron job
+      cron:
+        name: Run MySQL backup scripts
+        minute: "5"
+        hour: "00"
+        job: "python3 /var/backups/own/mysql.py"
+        user: backup
+        cron_file: backup_crons
+    

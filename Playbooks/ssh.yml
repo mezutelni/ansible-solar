@@ -1,0 +1,24 @@
+- hosts: all
+  become: true
+
+  tasks:
+    
+    - name: Put custom sshd config inside 99-custom.conf file
+      blockinfile:
+        dest: /etc/ssh/sshd_config.d/99-custom.conf
+        content: 
+          "
+          PermitRootLogin no  \n
+          PasswordAuthentication no \n
+          PermitEmptyPasswords no   \n
+          ClientAliveInterval 300   \n
+          AllowUsers szymon         \n
+          MaxAuthTries 6            
+          "
+        create: yes
+    
+    - name: Reload sshd
+      systemd:
+        state: reloaded
+        name: sshd
+    

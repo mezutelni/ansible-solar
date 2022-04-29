@@ -1,0 +1,8 @@
+#jinja2: lstrip_blocks: "True"
+{% if backups.databases is defined %}
+{% for db in backups.databases %}
+{% if db.type == 'mysql' %}
+{{db.host}};{{db.port}};{{db.user}};{{db.password}};{{db.database}}
+{% endif %}
+{% endfor %}
+{% endif %}

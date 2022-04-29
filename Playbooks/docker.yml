@@ -1,0 +1,37 @@
+- hosts: all
+  become: true
+  
+  tasks:
+    - name: Update package cache
+      apt:
+        update_cache: yes
+    
+    - name: Install needed packages
+      apt:
+        name: ca-certificates, curl, gnupg, lsb-release
+        state: present
+    
+    - name: Add docker's GPG key
+      apt_key: 
+        url: https://download.docker.com/linux/debian/gpg
+
+    - name: Add docker repository
+      apt_repository:
+        repo: deb [arch=amd64] https://download.docker.com/linux/{{ ansible_lsb.id|lower }} {{ ansible_lsb.codename|lower }} stable
+
+    - name: Update package cache again
+      apt:
+        update_cache: yes
+    
+    - name: Install docker-ce
+      apt:
+        name: docker-ce, docker-ce-cli, containerd.io, docker-compose-plugin
+
+    - name: Add user to docker group
+      user:
+        name: szymon
+        groups: docker
+        append: yes
+    
+
+      

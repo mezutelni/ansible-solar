@@ -1,0 +1,54 @@
+- hosts: all
+  become: true
+
+  tasks:
+    
+    - name: Install firewalld
+      apt:
+        name: firewalld
+        update_cache: yes
+    
+    - name: Enable https access
+      firewalld:
+        service: https
+        permanent: yes
+        state: enabled
+    
+    - name: Enable http access
+      firewalld:
+        service: http
+        permanent: yes
+        state: enabled
+    
+    - name: Remove ssh from public zone
+      firewalld:
+        service: ssh
+        zone: public
+        permanent: yes
+        state: disabled
+
+    - name: Add trusted IP
+      firewalld: 
+        source: 91.90.58.217
+        zone: trusted
+        permanent: yes
+        state: enabled
+
+    - name: Add trusted IP (work)
+      firewalld: 
+        source: 192.162.149.196
+        zone: trusted
+        permanent: yes
+        state: enabled
+
+    - name: Add ens19 to trusted zone
+      firewalld:
+        zone: trusted
+        interface: ens19
+        permanent: yes
+        state: enabled
+
+    - name: Reload firewalld service
+      systemd:
+        state: reloaded
+        name: firewalld
