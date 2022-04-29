@@ -29,8 +29,8 @@ def archive(archive_cmd, result_sql):
                              stdout=subprocess.PIPE,
                              stderr=subprocess.PIPE,
                              shell=True,
-                             input=result_sql,
-                             encoding='ascii')
+                             input=result_sql
+                             )
 
 def create_backup(ip, port, user, password, db):
     now = datetime.today()
@@ -38,23 +38,22 @@ def create_backup(ip, port, user, password, db):
     prefix = f'{now.year}-{now.month}-{now.day}_{now.hour}:{now.minute}'
     filename = f'mysql/{prefix}-{db}.sql.gz'
     # Prepare dump command
-    dump = f'/opt/homebrew/opt/mysql-client/bin/mysqldump' \
+    # TODO use subproccess.communicate to send password to stdin rather than using insecure password in cmd line
+    dump = f'/usr/bin/mysqldump' \
            f' --single-transaction' \
-           f' --column-statistics=0' \
            f' --host {ip}' \
            f' --port {port}' \
            f' --user {user}' \
-           f' -p' \
+           f' --password="{password}"' \
            f' {db}'
     # Prepare archive command
-    archive_cmd = f'pigz -9 > {filename}'
+    archive_cmd = f'/usr/bin/pigz -9 > {filename}'
 
     result = subprocess.run(dump,
                             stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE,
                             shell=True,
-                            input=password,
-                            encoding='ascii')
+                            )
     # Assume that error occurred, when exit code is not 0
     if result.returncode != 0:
         print(error_generator("dump_error", result.stderr.strip("Enter password: ")))
@@ -97,7 +96,7 @@ def read_config(filename):
 
 
 def main():
-    filename = 'config'
+    filename = '.config'
     ip, port, user, password, db, lines = read_config(filename)
     archives = []
     for i in range(0, lines):
