@@ -45,11 +45,13 @@ all:
         dockers:
           - "/srv/zabbix/docker-compose.yml"
     mars.szymonrysztof.pl:
+      ansible_ssh_common_args: '-o ProxyCommand="ssh -p 22 -W %h:%p -q earth.szymonrysztof.pl"'
       comment: Zabbix DB 
       vars:
         docker: yes
         public_ip: no
         priv_ip: 172.16.20.5
+        gateway: 172.16.20.4
       backups:
         databases: 
           - {
