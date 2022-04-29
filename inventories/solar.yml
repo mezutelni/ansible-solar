@@ -26,7 +26,6 @@ all:
         public_ip: yes
         priv_ip: 172.16.20.3
         dockers:
-          - "/srv/owncloud/docker-compose.yml"
       backups:
         databases: 
           - {
@@ -36,4 +35,28 @@ all:
             user: "nextcloud",
             password: "{{ lookup('file', '../passwords/.venus.nextcloud.pass') }}",
             database: "nextcloud_db"
+            }
+    earth.szymonrysztof.pl:
+      comment: Zabbix Server 
+      vars:
+        docker: yes
+        public_ip: yes
+        priv_ip: 172.16.20.4
+        dockers:
+          - "/srv/zabbix/docker-compose.yml"
+    mars.szymonrysztof.pl:
+      comment: Zabbix DB 
+      vars:
+        docker: yes
+        public_ip: no
+        priv_ip: 172.16.20.5
+      backups:
+        databases: 
+          - {
+            type: "mysql",
+            host: "127.0.0.1",
+            port: "3306",
+            user: "zabbix",
+            password: "{{ lookup('file', '../passwords/.mars.zabbix.pass') }}",
+            database: "zabbix_db"
             }
