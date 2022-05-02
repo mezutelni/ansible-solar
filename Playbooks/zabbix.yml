@@ -1,0 +1,48 @@
+- hosts: all
+  become: true
+
+  tasks:
+
+    - name: Add zabbix repository
+      apt:
+        deb: https://repo.zabbix.com/zabbix/6.0/debian/pool/main/z/zabbix-release/zabbix-release_6.0-1+debian{{ ansible_distribution_major_version }}_all.deb
+    
+    - name: Add zabbix to docker group
+      user:
+        name: zabbix
+        groups: docker
+        append: yes
+
+    - name: Install zabbix-agent2 
+      apt: 
+        name: zabbix-agent2
+        update_cache: yes
+
+    - name: Comment out default configuration for Server
+      lineinfile: 
+        path: /etc/zabbix/zabbix_agent2.conf
+        regexp: '^Server(.*)$' 
+        line: '#Server'
+
+    - name: Comment out default configuration for ServerActive
+      lineinfile: 
+        path: /etc/zabbix/zabbix_agent2.conf
+        regexp: '^ServerActive(.*)$' 
+        line: '#ServerActive'
+    
+
+    - name: Configure zabbix
+      blockinfile:
+        dest: /etc/zabbix/zabbix_agent2.d/99-custom.conf
+        content: 
+          "
+          Server=172.16.20.4                \n
+          ServerActive=172.16.20.4          \n
+          Hostname={{ inventory_hostname }}
+          "
+        create: yes
+    
+    - name: Reload zabbix-agent2
+      systemd:
+        state: restarted
+        name: zabbix-agent2
