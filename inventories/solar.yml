@@ -60,5 +60,5 @@ all:
             port: "3306",
             user: "zabbix",
             password: "{{ lookup('file', '../passwords/.mars.zabbix.pass') }}",
-            database: "zabbix_db"
+            database: "zabbix"
             }
