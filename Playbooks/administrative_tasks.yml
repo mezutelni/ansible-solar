@@ -19,13 +19,12 @@
     
     - name: Add shell utils to bashrc
       blockinfile:
-        path: /home/szymon/.bashrc
+        path: /home/{{ ansible_user|default("szymon") }}/.bashrc
         content: "source /etc/ansible_shell_goodies"
     
-    - name: Ensure that "szymon" is in needed groups
+    - name: Add user {{ ansible_user|default("szymon") }} to needed groups
       user:
-        name: szymon
-        groups: adm, backup, docker, sudo
+        name: '{{ ansible_user|default("szymon") }}'
+        groups: docker, adm, backup, sudo
         append: yes
 
-    
