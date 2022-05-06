@@ -18,9 +18,14 @@
         owner: root
         group: adm
     
-    - name: Add shell utils to bashrc
+    - name: Add shell utils to user's bashrc
       blockinfile:
         path: /home/{{ ansible_user|default("szymon") }}/.bashrc
+        content: "source /etc/ansible_shell_goodies"
+
+    - name: Add shell utils to root's bashrc
+      blockinfile:
+        path: /root/.bashrc
         content: "source /etc/ansible_shell_goodies"
     
     - name: Add user {{ ansible_user|default("szymon") }} to needed groups
@@ -29,3 +34,19 @@
         groups: docker, adm, backup, sudo
         append: yes
 
+    - name: Copy vimrc to {{ ansible_user|default("szymon") }}'s directory
+      copy:
+        src: ../files/vimrc
+        dest: /home/{{ ansible_user|default("szymon") }}/.vimrc
+        mode: 0664
+        owner: '{{ ansible_user|default("szymon") }}'
+        group: '{{ ansible_user|default("szymon") }}'
+
+    - name: Copy vimrc to root's directory
+      copy:
+        src: ../files/vimrc
+        dest: /root/.vimrc
+        mode: 0664
+        owner: root
+        group: root
+    
