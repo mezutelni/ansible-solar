@@ -5,9 +5,10 @@
 
     - name: Install essential programs
       apt:
-        name: vim, nmap, net-tools, ncat, ncdu, rsync
+        name: vim, nmap, net-tools, ncat, ncdu, rsync, mariadb-client
         update_cache: yes
         state: present
+      when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
     
     - name: Copy shell utils 
       copy: 
