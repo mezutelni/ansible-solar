@@ -29,7 +29,7 @@
 
     - name: Add user to docker group
       user:
-        name: {{ ansible_user|default("szymon") }}
+        name: '{{ ansible_user|default("szymon") }}'
         groups: docker
         append: yes
     
