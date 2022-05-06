@@ -1,0 +1,40 @@
+alias ap="ansible-playbook"
+alias dcup="docker compose up -d"
+alias dcdown="docker compose down"
+alias dcexec="docker compose exec" 
+alias dclogs="docker compose logs"
+
+#Display docker ps with most important things (less output)
+docker(){
+	if [ $# -le 1 ]; then
+		command docker "$@"
+	elif [ $1 == "ps" ] && [ $2 == "-p" ] && [ $# == "3" ]; then
+		command docker ps --format 'table {{.Names}}\t{{.Status}}\t{{.Image}}\t{{.Ports}}' | (read -r; printf "%s\n" "$REPLY"; sort -k $3 )
+	elif [ $1 == "ps" ] && [ $2 == "-p" ]; then
+		command docker ps --format 'table {{.Names}}\t{{.Status}}\t{{.Image}}\t{{.Ports}}' | (read -r; printf "%s\n" "$REPLY"; sort )
+	else
+		command docker "$@"
+	fi
+}
+
+#Use up 3 instead of cd ../../../ or cd ../; cd ../; cd ../
+up() { 
+	local x=''
+	for i in $(seq ${1:-1})
+	do 
+		x="$x../"
+	done;
+	cd $x; 
+}
+
+#Repeate last command with sudo
+pls(){
+    if [[ $SHELL == *"bash" ]]; then
+        sudo $(history -p !!)
+    elif [[ $SHELL == *"zsh" ]]; then
+        sudo $(fc -ln -1)
+    else
+        #Not sure if this will work, and i'm to lazy to check
+        sudo $(fc -ln -1)
+    fi
+}
