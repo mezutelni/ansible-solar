@@ -37,7 +37,6 @@
         content: 
           "
           Server=172.16.20.4                \n
-          ServerActive=172.16.20.4          \n
           Hostname={{ inventory_hostname }}
           "
         create: yes
