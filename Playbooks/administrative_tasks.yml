@@ -1,0 +1,31 @@
+- hosts: all
+  become: true
+
+  tasks:
+
+    - name: Install essential programs
+      apt:
+        name: vim, nmap, net-tools, ncat, ncdu, rsync
+        update_cache: yes
+        state: present
+    
+    - name: Copy shell utils 
+      copy: 
+        src: ../files/shell_goodies
+        dest: /etc/ansible_shell_goodies
+        mode: 0664
+        owner: root
+        group: adm
+    
+    - name: Add shell utils to bashrc
+      blockinfile:
+        path: /home/szymon/.bashrc
+        content: "source /etc/ansible_shell_goodies"
+    
+    - name: Ensure that "szymon" is in needed groups
+      user:
+        name: szymon
+        groups: adm, backup, docker, sudo
+        append: yes
+
+    
