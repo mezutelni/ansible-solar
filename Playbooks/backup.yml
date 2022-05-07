@@ -43,13 +43,15 @@
         owner: backup
         group: backup
         mode: 0660
+      when: (backups is defined) and (backups.databases is defined)
 
     - name: Add cron job
       cron:
         name: Run MySQL backup scripts
         minute: "5"
-        hour: "00"
+        hour: "0"
         job: "python3 /var/backups/own/mysql.py"
         user: backup
         cron_file: backup_crons
+      when: (backups is defined) and (backups.databases is defined)
     
