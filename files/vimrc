@@ -1,12 +1,17 @@
+" Disable VI compatibility mode
 set nocompatible
 filetype on
+set mouse=a
 set number
 syntax on
 set tabstop=4
+" Set small blacklight to easily find cursor
 set cursorline
 set cursorcolumn
 set shiftwidth=4
+" Search case insensitive
 set ignorecase
+" Enabel case sensitivity when search phrase is all in CAPS
 set smartcase
 set wildmenu
 set wildmode=list:longest
