@@ -40,6 +40,13 @@
         zone: trusted
         permanent: yes
         state: enabled
+    
+    - name: Add mercury's (VPN) IP to trusted
+      firewalld:
+        source: 146.59.65.120
+        zone: trusted
+        permanent: yes
+        state: enabled      
 
     - name: Add ens19 to trusted zone
       firewalld:
