@@ -1,10 +1,19 @@
 all:
   hosts:
+    solar.szymonrysztof.pl:
+      comment: Proxmox Instance
+      vars: 
+        docker: yes
+        public_ip: yes
+        priv_ip: 172.16.20.1
+        dockers:
+          - "/srv/nginx-proxy/docker-compose.yml"
     mercury.szymonrysztof.pl:
+      ansible_ssh_common_args: '-o ProxyCommand="ssh -p 22 -W %h:%p -q solar.szymonrysztof.pl"'
       comment: Vaultwarden 
       vars:
         docker: yes
-        public_ip: yes
+        public_ip: no
         priv_ip: 172.16.20.2 
         dockers:
           - "/srv/vaultwarden/docker-compose.yml"
@@ -20,10 +29,11 @@ all:
             }
         files: "/srv/vaultwarden" 
     venus.szymonrysztof.pl:
+      ansible_ssh_common_args: '-o ProxyCommand="ssh -p 22 -W %h:%p -q solar.szymonrysztof.pl"'
       comment: Nextcloud 
       vars:
         docker: yes
-        public_ip: yes
+        public_ip: no
         priv_ip: 172.16.20.3
         dockers:
       backups:
@@ -37,21 +47,22 @@ all:
             database: "nextcloud_db"
             }
     earth.szymonrysztof.pl:
+      ansible_ssh_common_args: '-o ProxyCommand="ssh -p 22 -W %h:%p -q solar.szymonrysztof.pl"'
       comment: Zabbix Server 
       vars:
         docker: yes
-        public_ip: yes
+        public_ip: no
         priv_ip: 172.16.20.4
         dockers:
           - "/srv/zabbix/docker-compose.yml"
     mars.szymonrysztof.pl:
-      ansible_ssh_common_args: '-o ProxyCommand="ssh -p 22 -W %h:%p -q earth.szymonrysztof.pl"'
+      ansible_ssh_common_args: '-o ProxyCommand="ssh -p 22 -W %h:%p -q solar.szymonrysztof.pl"'
       comment: Zabbix DB 
       vars:
         docker: yes
         public_ip: no
         priv_ip: 172.16.20.5
-        gateway: 172.16.20.4
+        gateway: 172.16.20.1 
       backups:
         databases: 
           - {
@@ -62,3 +73,13 @@ all:
             password: "{{ lookup('file', '../passwords/.mars.zabbix.pass') }}",
             database: "zabbix"
             }
+    jupiter.szymonrysztof.pl:
+      ansible_ssh_common_args: '-o ProxyCommand="ssh -p 22 -W %h:%p -q solar.szymonrysztof.pl"'
+      comment: Mailcow
+      vars:
+        docker: yes
+        public_ip: no
+        priv_ip: 172.16.20.6
+        gateway: 172.16.20.1
+        dockers:
+          - "/srv/mailcow/docker-compose.yml"
