@@ -1,2 +1,3 @@
 passwords/
 Playbooks/test.yml
+.DS_Store
