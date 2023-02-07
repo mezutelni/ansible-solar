@@ -3,12 +3,24 @@
 
   tasks:
 
+    - name: Change hostname
+      hostname:
+        name: "{{ inventory_hostname }}"
+
     - name: Install essential programs
       apt:
-        name: vim, nmap, net-tools, ncat, ncdu, rsync, mariadb-client, htop, wget
+        name: vim, nmap, net-tools, ncat, ncdu, rsync, mariadb-client, htop, wget, curl, mtr
         update_cache: yes
         state: present
       when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
+    
+    - name: Install BAT
+      apt: 
+        deb: https://github.com/sharkdp/bat/releases/download/v0.22.1/bat-musl_0.22.1_amd64.deb
+
+    - name: Install LSD
+      apt: 
+        deb: https://github.com/Peltoche/lsd/releases/download/0.23.1/lsd-musl_0.23.1_amd64.deb
     
     - name: Copy shell utils 
       copy: 
@@ -31,7 +43,7 @@
     - name: Add user {{ ansible_user|default("szymon") }} to needed groups
       user:
         name: '{{ ansible_user|default("szymon") }}'
-        groups: docker, adm, backup, sudo
+        groups: adm, backup, sudo
         append: yes
 
     - name: Copy vimrc to {{ ansible_user|default("szymon") }}'s directory
