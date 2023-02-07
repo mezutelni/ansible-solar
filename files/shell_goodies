@@ -1,20 +1,36 @@
+#!/bin/env sh
+
 alias ap="ansible-playbook"
 alias dcup="docker compose up -d"
 alias dcdown="docker compose down"
 alias dcexec="docker compose exec" 
 alias dclogs="docker compose logs"
+alias ls="lsd"
+alias cat="bat"
 
 #Display docker ps with most important things (less output)
-docker(){
-	if [ $# -le 1 ]; then
-		command docker "$@"
-	elif [ $1 == "ps" ] && [ $2 == "-p" ] && [ $# == "3" ]; then
-		command docker ps --format 'table {{.Names}}\t{{.Status}}\t{{.Image}}\t{{.Ports}}' | (read -r; printf "%s\n" "$REPLY"; sort -k $3 )
-	elif [ $1 == "ps" ] && [ $2 == "-p" ]; then
-		command docker ps --format 'table {{.Names}}\t{{.Status}}\t{{.Image}}\t{{.Ports}}' | (read -r; printf "%s\n" "$REPLY"; sort )
+docker() {
+	#Set docker binary, it depends on some distros and other oses like MacOs. 
+	if [[ -f /usr/bin/docker ]]; then
+	 	docker=/usr/bin/docker
+	elif [[ -f /usr/local/bin/docker ]]; then
+		docker=/usr/local/bin/docker
 	else
-		command docker "$@"
+		echo "Docker binary not found, unfunction this function" 
+		return 1
 	fi
+	
+	#Custom Docker functions, fallback to docker binary if no expression matches
+	if [[ $1 == "yeet" && $# == 1 ]]; then
+		$docker stop $($docker ps -aq) && $docker rm $($docker ps -aq)
+	elif [[ $1 == "yeet" && $2 == "-f" ]]; then
+		$docker stop $($docker ps -aq) 2> /dev/null
+		$docker rm $($docker ps -aq) 2> /dev/null
+		$docker system prune -f 2> /dev/null
+	else
+		$docker "$@"
+	fi
+	unset docker
 }
 
 #Use up 3 instead of cd ../../../ or cd ../; cd ../; cd ../
@@ -27,14 +43,3 @@ up() {
 	cd $x; 
 }
 
-#Repeate last command with sudo
-pls(){
-    if [[ $SHELL == *"bash" ]]; then
-        sudo $(history -p !!)
-    elif [[ $SHELL == *"zsh" ]]; then
-        sudo $(fc -ln -1)
-    else
-        #Not sure if this will work, and i'm to lazy to check
-        sudo $(fc -ln -1)
-    fi
-}
