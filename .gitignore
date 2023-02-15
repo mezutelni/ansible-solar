@@ -1,3 +1,5 @@
 passwords/
 Playbooks/test.yml
 .DS_Store
+debug.yml
+files/authorized_keys_backups
