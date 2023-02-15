@@ -27,7 +27,10 @@ all:
             password: "{{ lookup('file', '../passwords/.mercury.vaultwarden.pass') }}",
             database: "vaultwarden"
             }
-        files: "/srv/vaultwarden" 
+        files:
+          - { 
+            path: "/srv/vaultwarden" 
+            }
     venus.szymonrysztof.pl:
       ansible_ssh_common_args: '-o ProxyCommand="ssh -p 22 -W %h:%p -q solar.szymonrysztof.pl"'
       comment: Nextcloud 
@@ -67,7 +70,7 @@ all:
         databases: 
           - {
             type: "mysql",
-            host: "127.0.0.1",
+            host: "172.16.20.5",
             port: "3306",
             user: "zabbix",
             password: "{{ lookup('file', '../passwords/.mars.zabbix.pass') }}",
@@ -79,7 +82,17 @@ all:
       vars:
         docker: yes
         public_ip: no
-        priv_ip: 172.16.20.6
+        priv_ip: 172c.16.20.6
         gateway: 172.16.20.1
         dockers:
           - "/srv/mailcow/docker-compose.yml"
+      backups:
+        databases: 
+          - {
+            type: "mysql",
+            host: "127.0.0.1",
+            port: "13306",
+            user: "mailcow",
+            password: "{{ lookup('file', '../passwords/.jupiter.mailcow.pass') }}",
+            database: "mailcow"
+            }

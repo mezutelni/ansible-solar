@@ -1,0 +1,40 @@
+{% if backups is defined %}
+location:
+    source_directories:
+        - /etc
+        - /srv
+        {% if backups.files is defined %}
+        {% for path in backups.files %}
+
+        - {{path.path}}
+        {% endfor %}
+        {% endif %}
+
+    repositories:
+        - backup_agent@earth.szymonrysztof.pl:/mnt/backups/{fqdn}
+
+storage:
+    encryption_passphrase: {{borgmatic_passphrase}}
+
+retention:
+    keep_daily: 7
+
+consistency:
+    checks:
+        - repository
+        - archives
+{% if backups.databases is defined %}
+hooks:
+    {% for db in backups.databases %}
+    {% if db.type == 'mysql' %}
+
+    mysql_databases:
+        - name: {{db.database}}
+          hostname: {{db.host}}
+          port: {{db.port}}
+          username: {{db.user}}
+          password: "{{db.password}}"
+    {% endif %}
+    {% endfor %}
+{% endif %}
+{% endif %}

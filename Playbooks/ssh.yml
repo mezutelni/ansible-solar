@@ -12,7 +12,7 @@
           PasswordAuthentication no \n
           PermitEmptyPasswords no   \n
           ClientAliveInterval 300   \n
-          AllowUsers szymon         \n
+          AllowUsers szymon, backup_agent         \n
           MaxAuthTries 6            
           "
         create: yes

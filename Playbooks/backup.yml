@@ -1,57 +1,98 @@
 - hosts: all
+  name: Configure backups on vm
   become: true
+  vars:
+    borgmatic_passphrase: "{{ lookup('file', '../passwords/.borgmatic.pass') }}"
 
   tasks:
 
     - name: Installing needed packages
-      apt:
-        name: mariadb-client, pigz, rsync
-        update_cache: yes
+      ansible.builtin.apt:
+        name: mariadb-client, borgmatic, python3-pexpect
+        update_cache: true
       when: (backups is defined)
 
-    - name: Create folder which will hold backup files
-      file: 
-        path: /var/backups/own
+    - name: Create a directory if it does not exist
+      ansible.builtin.file:
+        path: /etc/borgmatic/
         state: directory
-        owner: backup
-        group: backup
-        mode: 0770
+        mode: '0700'
       when: (backups is defined)
 
-    - name: Create folder which will hold mysql backups
-      file: 
-        path: /var/backups/own/mysql
-        state: directory
-        owner: backup
-        group: backup
-        mode: 0770
-      when: (backups is defined) and (backups.databases is defined)
-
-    - name: Install mysql backup scripts
-      copy: 
-        src: ../files/mysql.py
-        dest: /var/backups/own/
-        owner: backup
-        group: backup
-        mode: 0700
-      when: (backups is defined) and (backups.databases is defined)
-    
     - name: Create backup config
-      template:
-        src: ../files/config.j2
-        dest: /var/backups/own/.config
-        owner: backup
-        group: backup
-        mode: 0660
-      when: (backups is defined) and (backups.databases is defined)
+      ansible.builtin.template:
+        src: ../templates/borgmatic.j2
+        dest: /etc/borgmatic/config.yaml
+        owner: root
+        group: root
+        mode: 0600
+      when: (backups is defined)
 
-    - name: Add cron job
-      cron:
-        name: Run MySQL backup scripts
-        minute: "5"
-        hour: "0"
-        job: "python3 /var/backups/own/mysql.py"
-        user: backup
-        cron_file: backup_crons
-      when: (backups is defined) and (backups.databases is defined)
-    
+    - name: Make sure that ssh key is created
+      ansible.builtin.user:
+        name: root
+        generate_ssh_key: true
+        ssh_key_type: ed25519
+
+    - name: Get public key
+      ansible.builtin.command: cat /root/.ssh/id_ed25519.pub
+      register: public_key
+      changed_when: public_key.rc != 0
+
+    - name: Create user on backup target
+      ansible.builtin.user:
+        name: backup_agent
+        append: true
+      when: inventory_hostname == "earth.szymonrysztof.pl"
+
+    - name: "Print public keys (TODO: make it automatic)"
+      ansible.builtin.debug:
+        msg: "{{ public_key.stdout }}\n"
+
+    - name: Create a directory if it does not exist
+      ansible.builtin.file:
+        path: /home/backup_agent/.ssh/
+        state: directory
+        owner: backup_agent
+        group: backup_agent
+        mode: 0700
+      when: inventory_hostname == "earth.szymonrysztof.pl"
+
+    - name: Copy authorized_keys to backup target
+      ansible.builtin.copy:
+        src: ../files/authorized_keys_backups
+        dest: /home/backup_agent/.ssh/authorized_keys
+        owner: backup_agent
+        group: backup_agent
+        mode: 0600
+      when: inventory_hostname == "earth.szymonrysztof.pl"
+
+    - name: Initialize borgmatic backup
+      ansible.builtin.expect:
+        command: "borgmatic init --encryption repokey --verbosity 1 --syslog-verbosity 1"
+        responses:
+          'Are you sure you want to continue connecting': "yes"
+          'new passphrase': "{{ lookup('file', '../passwords/.borgmatic.pass') }}"
+          'same passphrase': "{{ lookup('file', '../passwords/.borgmatic.pass') }}"
+      register: init
+      when: (backups is defined)
+
+    - name: Create cron for backup job
+      ansible.builtin.cron:
+        name: start borgmatic
+        minute: "0"
+        hour: "12"
+        user: root
+        job: "/usr/bin/borgmatic --syslog-verbosity 1"
+        cron_file: borgmatic
+      when: (backups is defined)
+
+    - name: Create cron for backing repositories to backblaze
+      ansible.builtin.cron:
+        name: backup to backblaze
+        minute: "0"
+        hour: "3"
+        user: "backup_agent"
+        job: "/usr/bin/rclone sync ./backups/ b2-backups:/solar-backups-sr/earth-backups"
+        cron_file: rclone
+      when: inventory_hostname == "earth.szymonrysztof.pl"
